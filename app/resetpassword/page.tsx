@@ -1,21 +1,16 @@
 "use client";
+
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import Link from "next/link";
 import { useState } from "react";
 import SignInNavbar from "@/components/SignInNavbar";
 import SignInFooter from "@/components/SignInFooter";
 
 interface MyFormValues {
-    username: string;
     password: string;
 }
 
-const SigninSchema = Yup.object().shape({
-    username: Yup.string()
-        .min(2, "username is too Short!")
-        .max(50, "username is too Long!")
-        .required("required"),
+const resetPassword = Yup.object().shape({
     password: Yup.string()
         .min(6, "password is too Short!")
         .max(50, "password too Long!")
@@ -29,7 +24,6 @@ const page = () => {
         setButtonClicked(true);
     };
     const initialValues: MyFormValues = {
-        username: "",
         password: "",
     };
     return (
@@ -37,18 +31,18 @@ const page = () => {
             <SignInNavbar />
             <div className="px-2 md:max-w-[50%] lg:max-w-[30%] mx-auto">
                 <div>
-                    <h1 className="text-white text-5xl font-[Detacher]">
-                        SIGN IN_
+                    <h1 className="text-white text-2xl font-[Detacher]">
+                        Reset password_
                     </h1>
                     <p className="font-spaceMono text-[#A4A4A4] text-base py-3">
-                        start a journey by creating an account and providing the
-                        details needed below.
+                        Enter a new password for your account to proceed to
+                        access your account again.
                     </p>
                 </div>
                 <div className="border-t border-b-[5px] border-r-[5px] border-l px-8 pt-8 pb-4">
                     <Formik
                         initialValues={initialValues}
-                        validationSchema={SigninSchema}
+                        validationSchema={resetPassword}
                         onSubmit={(values) => {
                             console.log(values);
                         }}
@@ -61,32 +55,13 @@ const page = () => {
                                 <Field
                                     className="bg-black  border py-3 text-xs pl-2 focus:outline-none text-white"
                                     name="username"
-                                    placeholder="Username"
-                                />
-                                {errors.username && touched.username ? (
-                                    <span className="text-red-600 text-sm">
-                                        {errors.username}
-                                    </span>
-                                ) : null}
-
-                                <Field
-                                    className="bg-black  border py-3 text-xs pl-2 focus:outline-none text-white"
-                                    name="password"
-                                    type="Password"
-                                    placeholder="Password"
+                                    placeholder="Enter a new password"
                                 />
                                 {errors.password && touched.password ? (
-                                    <span className="text-red-600 text-sm">
+                                    <span className="text-red-600 text-xs">
                                         {errors.password}
                                     </span>
                                 ) : null}
-
-                                <Link
-                                    href="/forgotpassword"
-                                    className="text-xs font-spaceMono text-[#A4A4A4]"
-                                >
-                                    Forgot password ?
-                                </Link>
 
                                 <button
                                     onClick={submit}
@@ -94,15 +69,11 @@ const page = () => {
                                     className="text-white font-spaceMono border-b-4 border-l-2 border-r-2 border-t py-2"
                                     type="submit"
                                 >
-                                    Access
+                                    Proceed
                                 </button>
                             </Form>
                         )}
                     </Formik>
-                    <p className="text-[#A4A4A4] font-spaceMono text-xs text-center pt-4">
-                        Don't have an account ?{" "}
-                        <Link href="/signup">Signup</Link>
-                    </p>
                 </div>
             </div>
             <SignInFooter />
