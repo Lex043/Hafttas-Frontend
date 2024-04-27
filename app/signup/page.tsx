@@ -1,13 +1,12 @@
 "use client";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import Link from "next/link";
-import localFont from "next/font/local";
-import { useState } from "react";
+import axios from "axios";
 import SignInNavbar from "@/components/SignInNavbar";
 import SignInFooter from "@/components/SignInFooter";
-
-// const myFont = localFont({ src: '../../public/fonts/Detacher/Detacher Regular.ttf' })
 
 interface MyFormValues {
     username: string;
@@ -28,16 +27,52 @@ const SignupSchema = Yup.object().shape({
 });
 
 const page = () => {
-    const [buttonClicked, setButtonClicked] = useState(false);
-    const submit = () => {
-        console.log("submit");
-        setButtonClicked(true);
-    };
+    const baseURL = "https://hafttas-backend.onrender.com"; // Base Url to avoid addition of localhost
 
     const initialValues: MyFormValues = {
         username: "",
         email: "",
         password: "",
+    };
+
+    const handleFormSubmit = async (
+        values: MyFormValues,
+        { resetForm }: any
+    ) => {
+        try {
+            const response = await axios.post(
+                `${baseURL}/auth/signup`,
+                JSON.stringify(values),
+
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            console.log(response);
+            if (response.status === 200) {
+                toast.success(`${response.data.message}`, {
+                    position: "top-center",
+                    style: {
+                        background: "#000",
+                        color: "#FFF",
+                    },
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error(`${error}`, {
+                position: "top-center",
+                style: {
+                    background: "#FFF",
+                    color: "#000",
+                },
+            });
+        }
+
+        // Reset the form after submission
+        resetForm();
     };
 
     return (
@@ -57,9 +92,7 @@ const page = () => {
                     <Formik
                         initialValues={initialValues}
                         validationSchema={SignupSchema}
-                        onSubmit={(values) => {
-                            console.log(values);
-                        }}
+                        onSubmit={handleFormSubmit}
                     >
                         {({ handleSubmit, errors, touched }) => (
                             <Form
@@ -98,8 +131,6 @@ const page = () => {
                                     </span>
                                 ) : null}
                                 <button
-                                    onClick={submit}
-                                    disabled={buttonClicked}
                                     className="text-white font-spaceMono border-b-4 border-l-2 border-r-2 border-t py-2"
                                     type="submit"
                                 >
@@ -114,6 +145,7 @@ const page = () => {
                     </p>
                 </div>
             </div>
+            <ToastContainer />
             <SignInFooter />
         </section>
     );

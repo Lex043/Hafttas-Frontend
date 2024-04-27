@@ -1,8 +1,13 @@
 "use client";
-import { Formik, Form, Field } from "formik";
+import { useRouter } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Link from "next/link";
+import axios from "axios";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
 import SignInNavbar from "@/components/SignInNavbar";
 import SignInFooter from "@/components/SignInFooter";
 
@@ -23,15 +28,62 @@ const SigninSchema = Yup.object().shape({
 });
 
 const page = () => {
-    const [buttonClicked, setButtonClicked] = useState(false);
-    const submit = () => {
-        console.log("submit");
-        setButtonClicked(true);
-    };
+    const [loading, setLoading] = useState<boolean>(false);
+    const router = useRouter();
+    const baseURL = "https://hafttas-backend.onrender.com"; // Base Url to avoid addition of localhost
+
     const initialValues: MyFormValues = {
         username: "",
         password: "",
     };
+
+    const handleFormSubmit = async (
+        values: MyFormValues,
+        { resetForm }: any
+    ) => {
+        try {
+            setLoading(true);
+            const response = await axios.post(
+                `${baseURL}/auth/signin`,
+                JSON.stringify(values),
+
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            if (response.status === 202) {
+                await signIn("credentials", {
+                    username: values.username,
+                    password: values.password,
+                    redirect: false, // Prevent automatic redirection
+                });
+                router.push("/dashboard");
+                toast.success(`${response.data.message}`, {
+                    position: "top-center",
+                    style: {
+                        background: "#000",
+                        color: "#FFF",
+                    },
+                });
+            }
+        } catch (error: any) {
+            console.error(error.message);
+            setLoading(false);
+            toast.error(`${error.message}`, {
+                position: "top-center",
+                style: {
+                    background: "#FFF",
+                    color: "#000",
+                },
+            });
+        }
+
+        // Reset the form after submission
+        resetForm();
+    };
+
     return (
         <section className="min-h-screen flex flex-col justify-between">
             <SignInNavbar />
@@ -49,9 +101,7 @@ const page = () => {
                     <Formik
                         initialValues={initialValues}
                         validationSchema={SigninSchema}
-                        onSubmit={(values) => {
-                            console.log(values);
-                        }}
+                        onSubmit={handleFormSubmit}
                     >
                         {({ handleSubmit, errors, touched }) => (
                             <Form
@@ -89,12 +139,10 @@ const page = () => {
                                 </Link>
 
                                 <button
-                                    onClick={submit}
-                                    disabled={buttonClicked}
                                     className="text-white font-spaceMono border-b-4 border-l-2 border-r-2 border-t py-2"
                                     type="submit"
                                 >
-                                    Access
+                                    {loading ? "loading..." : "Access"}
                                 </button>
                             </Form>
                         )}
@@ -105,6 +153,7 @@ const page = () => {
                     </p>
                 </div>
             </div>
+            <ToastContainer />
             <SignInFooter />
         </section>
     );
